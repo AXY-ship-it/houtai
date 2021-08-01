@@ -1,0 +1,55 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 2696958 */
+  src: url('iconfont.woff2?t=1627127792420') format('woff2'),
+       url('iconfont.woff?t=1627127792420') format('woff'),
+       url('iconfont.ttf?t=1627127792420') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-emaxcitygerenxinxitubiaoji03:before {
+  content: "\e61e";
+}
+
+.icon-user2:before {
+  content: "\e629";
+}
+
+.icon-shangpin:before {
+  content: "\e64f";
+}
+
+.icon-quanxian:before {
+  content: "\e60c";
+}
+
+.icon-shuju:before {
+  content: "\e6cb";
+}
+
+.icon-eye:before {
+  content: "\e602";
+}
+
+.icon-user:before {
+  content: "\e721";
+}
+
+.icon-user1:before {
+  content: "\e607";
+}
+
+.icon-password:before {
+  content: "\e612";
+}
+
+.icon-setup:before {
+  content: "\e672";
+}
+
