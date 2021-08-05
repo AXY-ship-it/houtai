@@ -108,8 +108,6 @@ export default {
       border-right:none;
     }
   }
-  .el-main {
-  }
 }
 i{
   margin-right:8px;
