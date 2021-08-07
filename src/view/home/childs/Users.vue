@@ -145,21 +145,6 @@ export default {
   components: {},
   props: {},
   data() {
-    // 验证邮箱
-    var checkEmail=(rule,value,cb)=>{
-      const regEmail=/^([a-zA-Z]|[0-9])(|)+@[a-zA-Z0-9]+([a-zA-Z]{2,4})$/
-      if(regEmail.test(value)){
-        return cb()
-      }
-       cb(new Error("请输入合法的邮箱"))
-    }
-    var checkPhone=(rule,value,cb)=>{
-      const regPhone=/^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9]){8}$/
-      if(regPhone.test(value)){
-        return cb()
-      }
-      cb(new Error('请输入合法的电话号码'))
-    }
     return {
         userList:[],
         total:0,
@@ -186,11 +171,9 @@ export default {
             ],
             email:[
               {required:true,message:"请输入邮箱",trigger:'blur'},
-              // {validator:checkEmail,trigger:'blur'}
             ],
             mobile:[
               {required:true,message:"请输入电话号码",trigger:'blur'},
-              // {validator:checkPhone,trigger:'blur'}
             ]
         },
         formLabelWidth: '120px',
