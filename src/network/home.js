@@ -33,19 +33,23 @@ export function addUsers(userInfo){
 }
 export function selectById(id){
     return request({
-        url:'/users/',
-        method:'get',
+        url:`/users/${id}`,
+        method:'get'
+    })
+}
+export function editById(id,email,mobile){
+    return request({
+        url:`/users/${id}`,
+        method:'put',
         params:{
-            id
+            email,
+            mobile
         }
     })
 }
 export function deleteUser(id){
     return request({
-        url:'/users/',
+        url:`/users/${id}`,
         method:'delete',
-        params:{
-            id
-        }
     })
 }

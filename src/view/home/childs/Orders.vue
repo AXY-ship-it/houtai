@@ -48,22 +48,19 @@
   :visible.sync="editOrderDialogVisible"
   width="50%">
   <el-form ref="editOrderRef" :model="editOrderForm" label-width="80px" :rules="editOrderRules">
-  <el-form-item label="省市区">
+  <el-form-item label="订单是否发货">
     <el-input v-model="editOrderForm.goods_name"></el-input>
   </el-form-item>
-  </el-form>
-  <span slot="footer" class="dialog-footer">
-    <el-button @click="editOrderDialogVisible= false">取 消</el-button>
-    <el-button type="primary" @click="confirmEditOrder">确 定</el-button>
-  </span>
-</el-dialog>
-<!-- 查看订单信息 -->
-<el-dialog
-  title="订单信息"
-  :visible.sync="editOrderDialogVisible"
-  width="50%">
-  <el-form ref="editOrderRef" :model="editOrderForm" label-width="80px" :rules="editOrderRules">
-  <el-form-item label="省市区">
+  <el-form-item label="订单支付方式">
+    <el-input v-model="editOrderForm.goods_name"></el-input>
+  </el-form-item>
+  <el-form-item label="订单价格">
+    <el-input v-model="editOrderForm.goods_name"></el-input>
+  </el-form-item>
+   <el-form-item label="订单数量">
+    <el-input v-model="editOrderForm.goods_name"></el-input>
+  </el-form-item>
+  <el-form-item label="支付状态">
     <el-input v-model="editOrderForm.goods_name"></el-input>
   </el-form-item>
   </el-form>
@@ -117,8 +114,10 @@ export default {
       this.getOrderList()
     },
     // 展示编辑订单信息的对话框
-    showEditOrder(){
+  async  showEditOrder(order){
        this.editOrderDialogVisible=true
+       const {data:res}=await editOrder(order.order_id)
+       console.log(res)
     },
     // 修改订单信息
     async  confirmEditOrder(){
