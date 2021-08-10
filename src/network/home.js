@@ -53,3 +53,9 @@ export function deleteUser(id){
         method:'delete',
     })
 }
+// 获取数据统计图的数据
+export function getReport(){
+    return request(({
+        url:'reports/type/1'
+    }))
+}

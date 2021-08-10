@@ -14,7 +14,7 @@
            </el-input>
          </el-col>
         <!-- 表格 -->
-           <el-table border style="width: 100%" :data="orderLists" stripe>
+           <el-table border style="width: 100%" :data="orderLists" stripe height="450">
                  <el-table-column width="60"  type="index" label="序号"></el-table-column>
                  <el-table-column prop="order_number" width="300" label="订单编号"></el-table-column>
                  <el-table-column prop="order_price" width="150" label="订单价格"></el-table-column>
@@ -28,8 +28,8 @@
                  <el-table-column  label="操作">
                   <template slot-scope="scope">
                     <el-button type="primary" size="mini" icon="el-icon-edit" @click="showEditOrder(scope.row)">编辑</el-button>
-                    <el-button type="success" size="mini" icon="el-icon-location-outline" @click="editOrderAddress(scope.row)">修改地址</el-button>
-                    <el-button type="info" size="mini" icon="el-icon-s-order" @click="lookOrderInfo(scope.row)">查看订单信息</el-button>
+                    <el-button type="success" size="mini" icon="el-icon-location-outline" @click="lookOrder(scope.row.order_id)">查看物流</el-button>
+                    <el-button type="info" size="mini" icon="el-icon-s-order" @click="lookOrderInfo(scope.row.order_id)">查看订单信息</el-button>
                   </template>
                  </el-table-column>
             </el-table>
@@ -69,17 +69,33 @@
     <el-button type="primary" @click="confirmEditOrder">确 定</el-button>
   </span>
 </el-dialog>
+<!-- 查看物流消息 -->
+<el-dialog
+  title="订单物流消息"
+  :visible.sync="orderDialogVisible"
+  width="50%">
+  <!-- <el-timeline>
+    <el-timeline-item
+      v-for="(item, index) in orderLogistics"
+      :key="index"
+      :timestamp="item.time">
+      {{item.context}}
+    </el-timeline-item>
+  </el-timeline> -->
+</el-dialog>
   </div>
 </template>
 
 <script>
-import {getOrderList, editOrder} from '@/network/order.js'
+import {getOrderList, editOrder,orderDetail,orderInfo} from '@/network/order.js'
 export default {
   name:'',
   components: {},
   props: {},
   data() {
     return {
+      // 物流消息框的显示与隐藏
+      orderDialogVisible:false,
       orderLists:[],
       total:0,
       query:{
@@ -89,7 +105,9 @@ export default {
       editOrderDialogVisible:false,
       editOrderForm:{},
       editOrderRules:{},
-      searchOrder:''
+      searchOrder:'',
+      // 物流消息
+      orderLogistics:[]
     }
   },
   watch: {},
@@ -122,6 +140,20 @@ export default {
     // 修改订单信息
     async  confirmEditOrder(){
         this.editOrderDialogVisible=false
+    },
+    // // 查看订单详情
+    // async lookOrderInfo(id){
+    //    const {data:res}=await orderDetail(id)
+    //    console.log(res)
+    //    if(res.meta.status!=200){
+    //      return this.$message.error('获取数据失败')
+    //    }
+    // },
+    // 查看物流消息
+   async lookOrder(id){
+      this.orderDialogVisible=true
+      const {data:res}=await orderInfo(id)
+      console.log(res)
     }
   },
   created() {

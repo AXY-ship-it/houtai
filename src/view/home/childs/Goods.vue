@@ -10,8 +10,8 @@
           <!-- 添加用户 -->
            <el-row>
                <el-col :span="12">
-               <el-input placeholder="请输入内容" v-model="user" class="input-with-select">
-                 <el-button slot="append" icon="el-icon-search"></el-button>
+               <el-input placeholder="请输入内容" v-model="query.query" class="input-with-select"  @keyup.enter.native="getAllGoods" clearable @clear="getAllGoods">
+                 <el-button slot="append" icon="el-icon-search" @click="getAllGoods"></el-button>
                </el-input>
            </el-col>
            <el-col :span="6">
@@ -19,12 +19,16 @@
            </el-col>
            </el-row>
            <!-- 表格 -->
-           <el-table border style="width: 100%" :data="goodLists">
+           <el-table border style="width: 100%" :data="goodLists" height="500">
                  <el-table-column width="60"  type="index" label="序号"></el-table-column>
                  <el-table-column prop="goods_name" width="600" label="商品名称"></el-table-column>
                  <el-table-column prop="goods_price" width="100" label="商品价格"></el-table-column>
                  <el-table-column prop="goods_weight" width="100" label="商品重量"></el-table-column>
-                 <el-table-column prop="add_time" width="150" label="创建时间"></el-table-column>
+                 <el-table-column prop="add_time" width="150" label="创建时间">
+                   <template slot-scope="scope">
+                     {{scope.row.add_time|formatDate}}
+                   </template>
+                 </el-table-column>
                  <el-table-column  label="操作">
                   <template slot-scope="scope">
                     <el-button type="primary" icon="el-icon-edit" @click="editGood(scope.row)">编辑</el-button>
@@ -49,7 +53,7 @@
     center
     :closable="false">
   </el-alert>
-     <el-steps :active="active" finish-status="success" align-center>
+     <el-steps :active="active-0" finish-status="success" align-center>
         <el-step title="基本信息"></el-step>
         <el-step title="商品参数"></el-step>
         <el-step title="商品属性"></el-step>
@@ -57,26 +61,59 @@
         <el-step title="商品内容"></el-step>
         <el-step title="完成"></el-step>
       </el-steps>
-      <el-tabs :tab-position="tabPosition" @tab-click="handleTabClick">
-        <el-tab-pane label="基本信息">
+      <el-form label-width="100px" :model="addForm" :rules="addGoodsRules" label-position="top" ref="addFormRef">
+        <el-tabs :tab-position="tabPosition" @tab-click="handleTabClick" v-model="active" :before-leave="beforeTabLeave">
+        <el-tab-pane label="基本信息" name="0">
             <!-- 基本信息 -->
-            <el-form :label-position="labelPosition" label-width="50px" :model="basicInfoForm" :rules="editGoodRules">
                 <el-form-item label="商品名称" prop="goods_name">
-                    <el-input v-model="basicInfoForm.goods_name"></el-input>
+                    <el-input v-model="addForm.goods_name"></el-input>
                 </el-form-item>
                 <el-form-item label="商品价格" prop="goods_price">
-                    <el-input v-model="basicInfoForm.goods_price"></el-input>
+                    <el-input v-model="addForm.goods_price"></el-input>
                 </el-form-item>
                 <el-form-item label="商品重量" prop="goods_weight">
-                    <el-input v-model="basicInfoForm.goods_weight"></el-input>
+                    <el-input v-model="addForm.goods_weight"></el-input>
                 </el-form-item>
-           </el-form>
+                <el-form-item label="商品数量" prop="goods_number">
+                    <el-input v-model="addForm.goods_number"></el-input>
+                </el-form-item>
+                <el-form-item label="商品分类" prop="goods_cat">
+                   <el-cascader v-model="addForm.goods_cat" :options="goodsCate" :props="cateProps" expandTrigger='hover' clearable
+                  @change="handleChange"></el-cascader>
+                </el-form-item>
         </el-tab-pane>
-        <el-tab-pane label="商品参数">商品参数</el-tab-pane>
-        <el-tab-pane label="商品属性">商品属性</el-tab-pane>
-        <el-tab-pane label="商品图片">商品图片</el-tab-pane>
-        <el-tab-pane label="商品内容">商品内容</el-tab-pane>
+        <el-tab-pane label="商品参数" name="1">
+          <el-form-item v-for="item in addForm.attrs" :key="item.attr_id" :label="item.attr_name">
+               <el-checkbox-group v-model="item.attr_vals">
+                  <el-checkbox :label="param" v-for="(param,index) in item.attr_vals" :key="index" border></el-checkbox>
+               </el-checkbox-group>
+          </el-form-item>
+        </el-tab-pane>
+        <el-tab-pane label="商品属性" name="2">
+                <el-form-item :label="attr.attr_name"  v-for="attr in goods_attr" :key="attr.attr_id">
+                    <el-input v-model="attr.attr_vals"></el-input>
+                </el-form-item>
+        </el-tab-pane>
+        <el-tab-pane label="商品图片" name="3">
+          <el-upload
+            class="upload-demo"
+            action="https://test.qhhz.xyz:8888/api/private/v1/upload"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :headers="headerObj"
+            list-type="picture"
+            :on-success="handleSuccess">
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+        </el-tab-pane>
+        <el-tab-pane label="商品内容" name="4">
+          <!-- 富文本编辑器 -->
+            <quill-editor v-model="addForm.goods_introduce">
+            </quill-editor>
+            <el-button style="margin-top:10px" type="primary" @click="add">添加商品</el-button>
+        </el-tab-pane>
     </el-tabs>
+      </el-form>
       </el-card>
       <!-- 编辑商品信息的对话框 -->
       <el-dialog
@@ -102,11 +139,20 @@
     <el-button type="primary" @click="confirmEditGood">确 定</el-button>
   </span>
 </el-dialog>
+<!-- 图片预览 -->
+<el-dialog
+  title="预览"
+  :visible.sync="picDialogVisible"
+  width="50%">
+  <img :src="picPreview" alt="" class="pic"/>
+</el-dialog>
   </div>
 </template>
 
 <script>
-import {deleteGoods,editGoods,getAllGoods,selectGoodById} from '@/network/goods.js'
+import {deleteGoods,editGoods,getAllGoods,selectGoodById,addGoods} from '@/network/goods.js'
+import {getAllCateList,getAttributes} from '@/network/attributes.js'
+import _ from 'lodash'
 export default {
   data() {
     return {
@@ -114,6 +160,7 @@ export default {
         user:'',
         total:0,
         query:{
+            query:'',
             pagenum:1,
             pagesize:10
         },
@@ -127,39 +174,61 @@ export default {
         },
         addGoodDialogVisible:false,
         isAdd:false,
-        active:1,
+        active:'0',
         tabPosition:'left',
-        // 对齐方式
-        labelPosition:'top',
-        // 基本信息
-        basicInfoForm:{
-            goods_name:'',
-            goods_info:'',
-            goods_weight:''
+        addGoodsRules:{
+            goods_name:[{required:true,message:'请输入商品名称',trigger:'blur'}],
+            goods_price:[{required:true,message:'请输入商品价格',trigger:'blur'}],
+            goods_number:[{required:true,message:'请输入商品数量',trigger:'blur'}],
+            goods_weight:[{required:true,message:'请输入商品重量',trigger:'blur'}],
+            goods_cat:[{required:true,message:'请输入商品分类',trigger:'blur'}]
         },
-        
+        addForm:{
+          goods_name:'',
+          goods_price:0,
+          goods_weight:0,
+          goods_number:0,
+          goods_cat:[],
+          // 商品参数
+          attrs:[],
+          // 图片上传到后台时的暂时存放路径
+          pics:[],
+          goods_introduce:''
+        },
+         // 商品属性
+          goods_attr:[],
+        cateProps:{
+          value:'cat_id',
+          label:'cat_name',
+          children:'children'
+        },
+        // 图片上传的请求头
+        headerObj:{
+          Authorization:window.sessionStorage.getItem('token')
+        },
+        // 图片预览
+        picPreview:'',
+        picDialogVisible:false
         
     }
   },
   methods: {
+    //获取所有商品分类
+      async getAllCates(){
+          const {data:res}=await getAllCateList()
+          console.log(res)
+          if(res.meta.status!==200){
+            this.$message.error('获取分类数据失败')
+            return
+          }
+          this.goodsCate=res.data
+          console.log(this.goodsCate)
+              
+      },
       async getAllGoods(){
           const {data:res}=await getAllGoods(this.query)
           this.total=res.data.total
-          res.data.goods.forEach(item=>{
-                 item.add_time=this.formatDate(item)
-          })
           this.goodLists=res.data.goods
-      },
-    //   对日期进行格式化
-      formatDate(row) {
-            let date = new Date(parseInt(row.add_time));
-            let Y = date.getFullYear() + '-';
-            let M = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) + '-' : date.getMonth() + 1 + '-';
-            let D = date.getDate() < 10 ? '0' + date.getDate() + ' ' : date.getDate() + ' ';
-            let h = date.getHours() < 10 ? '0' + date.getHours() + ':' : date.getHours() + ':';
-            let m = date.getMinutes() < 10 ? '0' + date.getMinutes() + ':' : date.getMinutes() + ':';
-            let s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
-            return Y + M + D + h + m + s;
       },
     //   监听pagesize的改变
       handleSizeChange(newSize){
@@ -220,17 +289,91 @@ export default {
     addGoods(){
        this.isAdd=true
     },
-    // 确定添加商品信息
-    confirmAddGood(){
+    // 添加商品时选中分类
+    handleChange(){
+       if(this.addForm.goods_cat.length!==3){
+         this.addForm.goods_cat=[]
+         this.$message.error('只允许选中三级商品分类')
+       }
+    },
+    // 阻止tab页签跳转
+    beforeTabLeave(activeName,oldName){
+      console.log(activeName,oldName)
+      if(oldName==='0'&&this.addForm.goods_cat.length!==3){
+        this.$message.error('请完善商品信息')
+        return false
+      }
 
     },
-    handleTabClick(tab, event){
-         console.log(tab, event);
+   add(){
+        this.$refs.addFormRef.validate(async vali=>{
+          if(!vali){
+           return this.$message.error('请完善商品信息')
+          }
+          const info=_.cloneDeep(this.addForm)
+          info.goods_cat=info.goods_cat.join(',')
+          console.log(info)
+          const {data:res}=await addGoods(info)
+          console.log(info,res)
+          if(res.meta.status!==201){
+           return this.$message.error('添加商品失败')
+          }
+          this.getAllGoods()
+          this.$message.success('添加商品成功')
+          this.isAdd=false
+          
+        })
+    },
+    // 处理tab点击时的请求事件,
+   async handleTabClick(){
+       if(this.active==='1'){
+         const {data:res}=await getAttributes(this.addForm.goods_cat[2],'many')
+        if(res.meta.status!==200){
+          this.$message.error('获取参数数据失败')
+          return
+        }
+        res.data.forEach(item=>{
+          item.attr_vals=item.attr_vals===''?[]:item.attr_vals.split(' ')
+        })
+        this.addForm.attrs=res.data
+        console.log(this.addForm.attrs)
+       }
+       else if(this.active==='2'){
+         const {data:res}=await getAttributes(this.addForm.goods_cat[2],'only')
+         console.log(res)
+         if(res.meta.status!==200){
+           this.$message.$error('获取商品属性失败')
+           return
+         }
+         this.goods_attr=res.data
+       }
+    },
+    // 处理图片预览时的操作
+    handlePreview(file){
+      this.picPreview=file.url
+      this.picDialogVisible=true
+      console.log(file)
+    },
+    // 处理图片移除时 的操作
+    handleRemove(file){
+      // 获取将要移除的图片的暂时路径
+      const picTemp=file.response.data.tmp_path
+     const i=this.addForm.pics.findIndex(x=>{
+        x.pic=picTemp
+      })
+      this.addForm.pics.splice(i,1)
+    },
+    // 监听图片上传成功后返回的数据，用response接收
+    handleSuccess(response){
+      const picInfo={pic:response.data.tmp_path}
+      this.addForm.pics.push(picInfo)
+      console.log(response)
     }
   },
 
   created() {
       this.getAllGoods()
+      this.getAllCates()
   },
 }
 </script>
@@ -240,5 +383,9 @@ export default {
     .btn{
         margin-left: 10px;
     }
+}
+.pic{
+  width:100%;
+  height:100%;
 }
 </style>

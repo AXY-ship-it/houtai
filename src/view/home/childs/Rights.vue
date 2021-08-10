@@ -30,6 +30,11 @@
     <el-table-column
       prop="level"
       label="权限等级">
+      <template slot-scope="scope">
+        <el-tag v-if="scope.row.level==='0'" type="success">一级</el-tag>
+        <el-tag v-if="scope.row.level==='1'" type="info">二级</el-tag>
+        <el-tag v-if="scope.row.level==='2'" type="warning">三级</el-tag>
+      </template>
     </el-table-column>
   </el-table>
     </el-card>
@@ -55,6 +60,7 @@ export default {
         if(res.meta.status!==200){
             this.$message.error('获取权限列表失败')
         }
+        console.log('111',res.data)
         this.tableData=res.data
         
     }

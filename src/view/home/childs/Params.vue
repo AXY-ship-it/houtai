@@ -26,13 +26,16 @@
           <!-- 动态参数面板 -->
             <el-tab-pane label="动态参数" name="many">
                <el-col :span=4>
-                 <el-button type="primary"  :disabled="manyResultParams.length===0?true:false" @click="addParams" class="m-margin">添加参数</el-button>
+                 <el-button type="primary"  :disabled="selectParams.length!==3?true:false" @click="addParams" class="m-margin">添加参数</el-button>
                </el-col>
                <el-table border style="width: 100%" :data="manyResultParams">
                  <!-- 展开行 -->
                  <el-table-column width="120" type="expand">
                      <template slot-scope="scope">
-                       <el-tag class="tag" @click="deleteParamsTag(scope.row,index)" v-for="(item,index) in scope.row.attr_vals" :key="index" closable >{{item}}</el-tag>
+                       <el-tag class="tag" @close="deleteParamsTag(scope.row,index)" v-for="(item,index) in scope.row.attr_vals" :key="index" closable >{{item}}</el-tag>
+                       <!-- tag输入框 -->
+                       <el-input class="input-new-tag" size="small" ref="saveTagInput" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)" v-if="scope.row.inputVisable" v-model="scope.row.inputValue"></el-input>
+                       <el-button v-else size="small" class="button-new-tag" @click="showInputTag(scope.row)">+NEW Tags</el-button>
                      </template>
                  </el-table-column>
                  <el-table-column width="120"  type="index" ></el-table-column>
@@ -48,13 +51,15 @@
             <!-- 静态参数面板 -->
             <el-tab-pane label="静态参数" name="only">
               <el-col :span=4>
-                 <el-button type="primary" :disabled="onlyResultParams.length===0?true:false" @click="addParams"  class="m-margin">添加参数</el-button>
+                 <el-button type="primary" :disabled="selectParams.length!==3?true:false" @click="addParams"  class="m-margin">添加参数</el-button>
                </el-col>
                <el-table border style="width: 100%" :data="onlyResultParams">
                  <!-- 展开行 -->
                  <el-table-column width="120" type="expand">
                      <template slot-scope="scope">
-                       <el-tag  v-for="(item,index) in scope.row.attr_vals" :key="index" closable @click="deleteParamsTag(scope.row,index)">{{item}}</el-tag>
+                       <el-tag  v-for="(item,index) in scope.row.attr_vals" :key="index" closable @close="deleteParamsTag(scope.row,index)">{{item}}</el-tag>
+                       <el-input class="input-new-tag" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)" v-if="scope.row.inputVisable" v-model="scope.row.inputValue"></el-input>
+                       <el-button v-else size="small" class="button-new-tag" @click="showInputTag(scope.row)">+NWE Tags</el-button>
                      </template>
                  </el-table-column>
                  <el-table-column width="120"  type="index" ></el-table-column>
@@ -130,7 +135,7 @@ export default {
       addPramsDialogVisible:false,
       addParamsForm:{
         attr_name:''
-      }
+      },
     }
   },
   computed:{
@@ -158,11 +163,9 @@ export default {
         return
       }
       this.paramsCateList=res.data
-      
     },
-  async  paramsChange(paramsVlaue){
+    async paramsChange(paramsVlaue){
         this.selectParams=paramsVlaue
-        console.log(this.selectParams)
         if(this.selectParams.length===3){
           // this.cateId=this.selectParams[2]
           // 获取动态数据
@@ -170,14 +173,22 @@ export default {
           // 获取静态数据
           const {data:res1}=await getAttributes(this.cateId,'only')
           res.data.forEach(item=>{
-            item.attr_vals=item.attr_vals.split(' ')
+            item.attr_vals=item.attr_vals!==''?item.attr_vals.split(' '):[]
+            item.inputVisable=false
+            item.inputValue=''
           })
           res1.data.forEach(item=>{
-            item.attr_vals=item.attr_vals.split(' ')
+            item.attr_vals=item.attr_vals!==''?item.attr_vals.split(' '):[]
           })
           this.onlyResultParams=res1.data
           this.manyResultParams=res.data
           // console.log(this.resultParams)
+          return
+        }
+        else{
+          this.selectParams=[]
+          this.onlyResultParams=[]
+          this.manyResultParams=[]
         }
     },
     //对参数进行编辑
@@ -266,9 +277,29 @@ export default {
      }
       confirmParamsEdit(paramTag)
     },
-    //添加tag
-    addParamsTag(row){
-
+    // 显示标签输入框
+    showInputTag(param){
+       param.inputVisable=true
+       this.$nextTick(_ => {
+          this.$refs.saveTagInput.$refs.input.focus()
+        })
+    },
+   async handleInputConfirm(param){
+        if(param.inputValue.trim()===''){
+          param.inputValue=''
+          param.inputVisable=false
+          return
+        }
+        param.attr_vals.push(param.inputValue.trim())
+        param.inputValue=''
+        param.inputVisable=false
+        const {data:res}=await confirmParamsEdit({id:this.cateId,...param,attr_vals:param.attr_vals.join(' ')})
+        console.log(res)
+        if(res.meta.status!==200){
+          this.$message.error('修改参数项失败')
+          return
+        }
+        this.$message.success('修改参数项成功')
     }
   },
   created() {
@@ -282,9 +313,21 @@ export default {
   margin-top: 20px;
 }
 .tag{
-  margin-right: 20px !important;
+  margin-right: 10px !important;
 }
 .m-margin{
   margin-bottom:10px;
 }
+.button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+.input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
+  }
 </style>

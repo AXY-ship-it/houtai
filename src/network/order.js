@@ -19,3 +19,15 @@ export function editOrder(orderInfo){
         }
     })
 }
+// 查看订单详情
+export function orderDetail(id){
+    return request({
+        url:`/orders/${id}`
+    })
+}
+// 查看物流消息
+export function orderInfo(id){
+    return request({
+        url:`/kuaidi/${id}`
+    })
+}

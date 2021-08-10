@@ -2,10 +2,7 @@ import {request} from './api'
 export function getAllGoods(query){
     return request({
         url:'/goods',
-        params:{
-            pagenum:query.pagenum,
-            pagesize:query.pagesize
-        }
+        params:query
     })
 }
 // 根据商品id查询商品
@@ -27,5 +24,13 @@ export function deleteGoods(id){
     return request({
         url:`/goods/${id}`,
         method:'delete'
+    })
+}
+// 添加商品
+export function addGoods(info){
+    return request({
+        url:'/goods',
+        method:'post',
+        data:info
     })
 }
